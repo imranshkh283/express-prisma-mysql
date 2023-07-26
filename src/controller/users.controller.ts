@@ -25,55 +25,17 @@ const getAllUsers = async (req: Request, res: Response) => {
 };
 
 const updateUsers = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const { name, email } = req.body;
-    const updated = await prisma.user.update({
-      where: {
-        id: Number(id),
-      },
-      data: {
-        name: String(name),
-        email: String(email),
-      },
-    });
-    res.json({ message: "update", data: updated });
-  } catch (error) {
-    console.log(error);
-  }
+  const userId = Number(req.params.id);
+  const user = await userService.updateUserById(userId, req.body);
+  res.json(user);
 };
 
 const deleteUser = async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const user = await prisma.user.delete({
-    where: {
-      id: Number(id),
-    },
+  const Id = Number(req.params.id);
+  const del = await userService.deleteUserById(Id);
+  res.status(200).json({
+    message: "User deleted",
   });
-  res.json({ message: "delete" });
-};
-
-const login = async (req: Request, res: Response) => {
-  try {
-    const { email, password } = req.body;
-    const getPass = await prisma.user.findUnique({
-      where: {
-        email: String(email),
-      },
-      select: {
-        email: true,
-        password: true,
-      },
-    });
-    if (getPass?.password) {
-      const valid = await bcrypt.compare(password, getPass.password as string);
-      if (!valid) {
-        return res.json("Incorrect email or password");
-      } else {
-        return res.json("Success");
-      }
-    }
-  } catch (error) {}
 };
 
 export default {
@@ -81,5 +43,4 @@ export default {
   getAllUsers,
   updateUsers,
   deleteUser,
-  login,
 };
