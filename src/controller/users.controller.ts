@@ -1,10 +1,20 @@
+import { NextFunction, Request, Response } from "express";
+import Joi from "joi";
 import bcrypt from "bcryptjs";
 import prisma from "../client";
 import { userService } from "../services";
-import { NextFunction, Request, Response } from "express";
 
 const insertUser = async (req: Request, res: Response, next: NextFunction) => {
   const { email, name } = req.body;
+  const schema = Joi.object({
+    name: Joi.string().min(3).max(30).required(),
+    email: Joi.string().email().required(),
+    password: Joi.string().min(6).max(30).required(),
+  });
+  if (schema.validate(req.body).error) {
+    res.send(schema.validate(req.body).error?.details);
+  }
+
   const password = await bcrypt.hash(req.body.password, 8);
   const user = await userService.createUser({ name, email, password });
   return res.status(200).json({ message: "user create", data: user });

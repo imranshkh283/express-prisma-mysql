@@ -9,6 +9,6 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
     email,
     password
   );
-  res.json({ checkUseremail });
+  res.send({ checkUseremail });
 };
 export default { login };

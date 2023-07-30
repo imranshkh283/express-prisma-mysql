@@ -36,7 +36,10 @@ export const updateUserById = async <Key extends keyof user>(
   return updatedUser as Pick<user, Key> | null;
 };
 
-export const getUserByEmail = async (email: string) => {
+export const getUserByEmail = async <Key extends keyof user>(
+  email: string,
+  keys: Key[] = ["id", "email", "name", "password"] as Key[]
+) => {
   return await prisma.user.findUnique({ where: { email } });
 };
 

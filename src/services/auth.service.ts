@@ -1,11 +1,23 @@
-import { Prisma, user } from "@prisma/client";
-import prisma from "../client";
+import jwt from "jsonwebtoken";
 import ApiError from "../utils/ApiError";
-import { userService } from "./";
+import { isPasswordMatch } from "../utils/encryptions";
+import exclude from "../utils/exclude";
+import { userService, tokenService } from "./";
 
-export const loginUserWithEmailAndPassword = (
+export const loginUserWithEmailAndPassword = async (
   email: string,
   password: string
 ) => {
-  return [email, password];
+  const user = await userService.getUserByEmail(email, ["password"]);
+  if (!user || !(await isPasswordMatch(password, user.password as string))) {
+    throw new ApiError(500, "Incorrect email or password");
+  }
+  const users = exclude(user, [
+    "name",
+    "password",
+    "isEmailVerified",
+    "status",
+  ]);
+  const token = jwt.sign({ user }, "secret", { expiresIn: "1h" });
+  return [user, token];
 };
